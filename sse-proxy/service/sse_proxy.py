@@ -114,7 +114,7 @@ Does not create a global session with SSE
 '''
 
 def getDevices(aInSession):
-    deviceUrl = generateUrl(SSE, SSE_REGISTRY, 'shuchatt-bld') # should be hostname
+    deviceUrl = generateUrl(SSE, SSE_REGISTRY, 'machine-name') # should be hostname
     deviceUrl = generateUrl(SSE, SSE_REGISTRY) # should be hostname
     logging.info("EXECUTE REQUEST: " + deviceUrl)
     lResponse = aInSession.get(deviceUrl)
@@ -138,7 +138,7 @@ def getSseSession():
     else:
         logging.info("SSE: Creating session with SSE")
         globalSession = requests.Session()
-        globalSession.cert = ("certs/technical-services.pem", "certs/technical-services.key")
+        globalSession.cert = ("cert.pem", "certs.key")
         globalSession.headers.update({"Content-Type": "application/json"})
         
         
@@ -222,7 +222,7 @@ def getSpecificInfo(deviceId):
 
 
 
-@sse_proxy_bp.route('/devices/<string:deviceId>/apic/<path:apicUri>', methods=['GET', 'POST'])
+@sse_proxy_bp.route('/devices/<string:deviceId>/machine/<path:machineUri>', methods=['GET', 'POST'])
 def executeApicRequest(deviceId, apicUri):
 
     try:
@@ -238,18 +238,18 @@ def executeApicRequest(deviceId, apicUri):
         if request.method.lower() == 'POST'.lower():
             logging.info("Executing POST")
             lRequestBody = request.get_json(silent=True)
-            lResponse = executeCommand(aInSession=lSession, aInDeviceId=deviceId, aInUri=apicUri, aInMsgPayload=json.loads(lRequestBody), aInMethod='POST', aInPayloadScheme='http')
+            lResponse = executeCommand(aInSession=lSession, aInDeviceId=deviceId, aInUri=machineUri, aInMsgPayload=json.loads(lRequestBody), aInMethod='POST', aInPayloadScheme='http')
             lResponseDict = json.loads(lResponse.json())["payload"][0]["body"]
 
         else:
             logging.info("Executing GET")
-            lResponse = executeCommand(aInSession=lSession, aInDeviceId=deviceId, aInUri=apicUri, aInMethod='GET', aInPayloadScheme='http')
+            lResponse = executeCommand(aInSession=lSession, aInDeviceId=deviceId, aInUri=machineUri, aInMethod='GET', aInPayloadScheme='http')
             lResponseDict = lResponse.json()["payload"][0]["body"]
 
         return successJsonResponse(200, aInMsg=None, aInDict=lResponseDict)
 
     except:
-        return failJsonResponse(400, aInMsg="Could not execute APIC request")
+        return failJsonResponse(400, aInMsg="Could not execute Machine request")
 
 
 
